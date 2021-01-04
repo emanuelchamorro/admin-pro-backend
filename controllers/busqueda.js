@@ -22,7 +22,7 @@ const getTodo = async (req, res = response) => {
 
  */
 
- const[usuarios, medicos, hospitales] = await Promise.all([
+ const[usuarios, hospitales, medicos] = await Promise.all([
          Usuario.find({nombre:regexp}),
          Hospital.find({nombre:regexp}),
          Medico.find({nombre:regexp}),
