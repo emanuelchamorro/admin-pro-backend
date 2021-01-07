@@ -75,56 +75,59 @@ const createUsuarios = async(req,res) => {
 
 }
 
-const actualizarUsuario = async(req,res) =>{
+const actualizarUsuario = async (req, res = response) =>{
   
-    const uid= req.params.id;
-    
-    try{
-      
-        const usuarioDB = await Usuario.findById(uid);
+    const uid = req.params.id;
 
-        if(!usuarioDB) {
-            return res.status(400).json({
+
+    try {
+
+        const usuarioDB = await Usuario.findById( uid );
+
+        if ( !usuarioDB ) {
+            return res.status(404).json({
                 ok: false,
-                msg: "No existe un usuario con ese id"
-            })
+                msg: 'No existe un usuario por ese id'
+            });
         }
 
-       //Actualizaciones
-       const campos = req.body;
+        // Actualizaciones
+        const { password, google, email, ...campos } = req.body;
 
-        if (usuarioDB.email === req.body.email) {
-            //para que al actualizar no se vuelva a mandar el mismo correo como duplicado
-            delete campos.email
-        } else {
-            const existeEmail = await Usuario.findOne({email:req.body.email})
-            if (existeEmail){
-             return res.status(400).json({
-                 ok:false,
-                 msg:'Ya existe un usuario con ese email'
-             })
+        if ( usuarioDB.email !== email ) {
+
+            const existeEmail = await Usuario.findOne({ email });
+            if ( existeEmail ) {
+                return res.status(400).json({
+                    ok: false,
+                    msg: 'Ya existe un usuario con ese email'
+                });
             }
         }
+        
+        if ( !usuarioDB.google ){
+            campos.email = email;
+        } else if ( usuarioDB.email !== email ) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'Usuario de google no pueden cambiar su correo'
+            });
+        }
 
+        const usuarioActualizado = await Usuario.findByIdAndUpdate( uid, campos, { new: true } );
 
-       //campos que no quiero que reemplaze
-       delete campos.password;
-       delete campos.google;
-     
-       // {new:true} es para que postman regrese instantaneamente cualquier actualización del usuario, no es indispensable
-       usuarioActualizado = await Usuario.findByIdAndUpdate(uid, campos, {new:true});
-      
         res.json({
-            ok:true,
-            usuario: usuarioActualizado,
-        })
+            ok: true,
+            usuario: usuarioActualizado
+        });
 
-    } catch(error){
-       console.log(error);
-       res.status(500).json({
-           ok: false,
-           msg: 'Error inesperado'
-       })
+        
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            ok: false,
+            msg: 'Error inesperado'
+        })
     }
 }
 
