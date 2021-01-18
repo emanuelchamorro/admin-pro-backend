@@ -2,9 +2,11 @@ require('dotenv').config();
 
 const express = require('express');
 
-const cors = require('cors')
+const path = require('path');
 
-const {dbConnection} = require('./database/config')
+const cors = require('cors');
+
+const {dbConnection} = require('./database/config');
 
 // Crear el servidor de express
 
@@ -33,6 +35,12 @@ app.use('/api/hospitales', require('./routes/hospitales'));
 app.use('/api/medicos', require('./routes/medicos'));
 app.use('/api/todo', require('./routes/busqueda'));
 app.use('/api/upload', require('./routes/uploads'));
+
+// Toda otra ruta
+
+app.get('*', (req, res) => {
+   res.sendFile( path.resolve( __dirname, 'public/index.html' ));
+});
 
 //en vez de poner el numero del puerto uso la variable de entorno del archivo .env
 
